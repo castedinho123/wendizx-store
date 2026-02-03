@@ -135,12 +135,18 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log('═══════════════════════════════════════');
-    console.log('🚀 SERVIDOR MERCADO PAGO INICIADO');
-    console.log('═══════════════════════════════════════');
-    console.log(`📡 Porta: ${PORT}`);
-    console.log(`🌐 URL: http://localhost:${PORT}`);
-    console.log(`💳 API Key: ${MP_ACCESS_TOKEN.substring(0, 20)}...`);
-    console.log('═══════════════════════════════════════');
-});
+// Para Vercel (serverless)
+if (process.env.VERCEL) {
+    module.exports = app;
+} else {
+    // Para ambiente local
+    app.listen(PORT, () => {
+        console.log('═══════════════════════════════════════');
+        console.log('🚀 SERVIDOR MERCADO PAGO INICIADO');
+        console.log('═══════════════════════════════════════');
+        console.log(`📡 Porta: ${PORT}`);
+        console.log(`🌐 URL: http://localhost:${PORT}`);
+        console.log(`💳 API Key: ${MP_ACCESS_TOKEN.substring(0, 20)}...`);
+        console.log('═══════════════════════════════════════');
+    });
+}

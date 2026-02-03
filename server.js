@@ -1,25 +1,25 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// CONFIGURAÇÃO DO MERCADO PAGO
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || 'APP_USR-7849050098929344-120302-cbf2d4b2f5fb0c2d4ec3950df8fbd5ff-2123976336';
 const MP_API_URL = 'https://api.mercadopago.com/v1/payments';
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // Para servir o HTML
+app.use(express.static('public'));
 
 // ROTA: Criar pagamento PIX
 app.post('/api/criar-pix', async (req, res) => {
     try {
         const { valor } = req.body;
 
-        console.log(`[${new Date().toISOString()}] 💰 Criando PIX de R$ ${valor}`);
+        console.log(`💰 Criando PIX de R$ ${valor}`);
 
         if (!valor || valor < 1) {
             return res.status(400).json({
@@ -39,8 +39,6 @@ app.post('/api/criar-pix', async (req, res) => {
             }
         };
 
-        console.log('📦 Payload:', JSON.stringify(payload, null, 2));
-
         const response = await fetch(MP_API_URL, {
             method: 'POST',
             headers: {
@@ -53,8 +51,6 @@ app.post('/api/criar-pix', async (req, res) => {
 
         const data = await response.json();
 
-        console.log(`📊 Status: ${response.status}`);
-
         if (!response.ok) {
             console.error('❌ Erro na API:', data);
             return res.status(response.status).json({
@@ -65,7 +61,6 @@ app.post('/api/criar-pix', async (req, res) => {
 
         console.log('✅ PIX criado com sucesso! ID:', data.id);
 
-        // Retorna apenas os dados necessários
         res.json({
             success: true,
             paymentId: data.id,
@@ -89,8 +84,6 @@ app.get('/api/verificar-pagamento/:paymentId', async (req, res) => {
     try {
         const { paymentId } = req.params;
 
-        console.log(`[${new Date().toISOString()}] 🔍 Verificando pagamento ${paymentId}`);
-
         const response = await fetch(`${MP_API_URL}/${paymentId}`, {
             method: 'GET',
             headers: {
@@ -101,14 +94,11 @@ app.get('/api/verificar-pagamento/:paymentId', async (req, res) => {
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('❌ Erro ao verificar:', data);
             return res.status(response.status).json({
                 error: 'Erro ao verificar pagamento',
                 details: data
             });
         }
-
-        console.log(`📊 Status do pagamento: ${data.status}`);
 
         res.json({
             success: true,
@@ -119,7 +109,6 @@ app.get('/api/verificar-pagamento/:paymentId', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ Erro no servidor:', error);
         res.status(500).json({
             error: 'Erro interno do servidor',
             message: error.message
@@ -135,11 +124,15 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// ROTA: Página principal
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Para Vercel (serverless)
 if (process.env.VERCEL) {
     module.exports = app;
 } else {
-    // Para ambiente local
     app.listen(PORT, () => {
         console.log('═══════════════════════════════════════');
         console.log('🚀 SERVIDOR MERCADO PAGO INICIADO');

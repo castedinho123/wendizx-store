@@ -6,7 +6,7 @@ const app = express();
 const PORT = 3000;
 
 // CONFIGURAÇÃO DO MERCADO PAGO
-const MP_ACCESS_TOKEN = 'APP_USR-7849050098929344-120302-cbf2d4b2f5fb0c2d4ec3950df8fbd5ff-2123976336';
+const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || 'APP_USR-7849050098929344-120302-cbf2d4b2f5fb0c2d4ec3950df8fbd5ff-2123976336';
 const MP_API_URL = 'https://api.mercadopago.com/v1/payments';
 
 // Middlewares
